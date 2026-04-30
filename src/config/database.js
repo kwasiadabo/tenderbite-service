@@ -91,7 +91,115 @@ const initDatabase = async () => {
     END
   `);
 
+   // ── productPrice table ──────────────────────────────────────────────────
+  await db.request().query(`
+    IF NOT EXISTS (
+      SELECT 1 FROM INFORMATION_SCHEMA.TABLES
+      WHERE TABLE_NAME = 'productPrice'
+    )
+    BEGIN
+      CREATE TABLE productPrice (
+        id            UNIQUEIDENTIFIER  NOT NULL DEFAULT NEWID(),
+        productId     UNIQUEIDENTIFIER  NOT NULL,
+        price         DECIMAL(10, 2)    NOT NULL,
+        currency      NVARCHAR(3)       NOT NULL DEFAULT 'USD',
+        effectiveFrom DATETIME2         NULL,     -- NULL = always active from creation
+        effectiveTo   DATETIME2         NULL,     -- NULL = no expiry
+        createdAt     DATETIME2         NOT NULL DEFAULT SYSDATETIME(),
+        updatedAt     DATETIME2         NOT NULL DEFAULT SYSDATETIME(),
+        CONSTRAINT PK_productPrice    PRIMARY KEY CLUSTERED (id),
+        CONSTRAINT FK_productPrice_Product
+          FOREIGN KEY (productId) REFERENCES Products(id)
+          ON DELETE CASCADE
+      );
+ 
+      -- Index for fast per-product price lookups
+      CREATE NONCLUSTERED INDEX IX_productPrice_ProductId
+        ON productPrice (productId)
+        INCLUDE (price, currency, effectiveFrom, effectiveTo);
+ 
+      -- Index to speed up active-price queries
+      CREATE NONCLUSTERED INDEX IX_productPrice_Active
+        ON productPrice (productId, effectiveFrom, effectiveTo)
+        INCLUDE (price, currency);
+ 
+      PRINT 'productPrice table created.';
+    END
+    ELSE
+      PRINT 'productPrice table already exists.';
+  `);
+
+  // ── Orders ────────────────────────────────────────────────────────────────
+  await db.request().query(`
+    IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Orders')
+    BEGIN
+      CREATE TABLE Orders (
+        id                     UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+        orderNumber            NVARCHAR(50)     NOT NULL,
+        status                 NVARCHAR(20)     NOT NULL DEFAULT 'draft',
+                               -- draft | pending | confirmed | processing | completed | cancelled
+        customerName           NVARCHAR(255)    NOT NULL,
+        customerPhone          NVARCHAR(50)     NOT NULL,
+        customerEmail          NVARCHAR(255)    NOT NULL,
+        customerLocation       NVARCHAR(500)    NOT NULL,
+        additionalInstructions NVARCHAR(MAX)    NULL,
+        subtotal               DECIMAL(12, 2)   NOT NULL,
+        totalAmount            DECIMAL(12, 2)   NOT NULL,
+        currency               NVARCHAR(3)      NOT NULL DEFAULT 'USD',
+        submittedAt            DATETIME2        NULL,
+        createdAt              DATETIME2        NOT NULL DEFAULT SYSDATETIME(),
+        updatedAt              DATETIME2        NOT NULL DEFAULT SYSDATETIME(),
+        CONSTRAINT PK_Orders           PRIMARY KEY CLUSTERED (id),
+        CONSTRAINT UQ_Orders_Number    UNIQUE (orderNumber),
+        CONSTRAINT CK_Orders_Status    CHECK (status IN (
+          'draft','pending','confirmed','processing','completed','cancelled'
+        ))
+      );
+      CREATE NONCLUSTERED INDEX IX_Orders_Status    ON Orders (status)    INCLUDE (orderNumber, customerName, customerEmail, totalAmount, createdAt);
+      CREATE NONCLUSTERED INDEX IX_Orders_Email     ON Orders (customerEmail) INCLUDE (orderNumber, status, createdAt);
+      CREATE NONCLUSTERED INDEX IX_Orders_CreatedAt ON Orders (createdAt DESC);
+      PRINT 'Orders table created.';
+    END
+    ELSE PRINT 'Orders table already exists.';
+  `);
+ 
+  // ── OrderItems ────────────────────────────────────────────────────────────
+  await db.request().query(`
+    IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'OrderItems')
+    BEGIN
+      CREATE TABLE OrderItems (
+        id          UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+        orderId     UNIQUEIDENTIFIER NOT NULL,
+        productId   UNIQUEIDENTIFIER NULL,          -- nullable: custom / off-catalogue items
+        category    NVARCHAR(100)    NOT NULL,
+        productName NVARCHAR(255)    NOT NULL,
+        description NVARCHAR(MAX)    NULL,
+        weight      DECIMAL(10, 3)   NULL,
+        weightUnit  NVARCHAR(10)     NULL,          -- kg | g | lb | oz | ton
+        unitPrice   DECIMAL(12, 2)   NOT NULL,
+        quantity    INT              NOT NULL,
+        lineTotal   DECIMAL(12, 2)   NOT NULL,
+        currency    NVARCHAR(3)      NOT NULL DEFAULT 'USD',
+        CONSTRAINT PK_OrderItems PRIMARY KEY CLUSTERED (id),
+        CONSTRAINT FK_OrderItems_Order
+          FOREIGN KEY (orderId) REFERENCES Orders(id) ON DELETE CASCADE,
+        CONSTRAINT CK_OrderItems_Qty   CHECK (quantity > 0),
+        CONSTRAINT CK_OrderItems_Price CHECK (unitPrice >= 0)
+      );
+      CREATE NONCLUSTERED INDEX IX_OrderItems_OrderId
+        ON OrderItems (orderId)
+        INCLUDE (category, productName, unitPrice, quantity, lineTotal, currency);
+      PRINT 'OrderItems table created.';
+    END
+    ELSE PRINT 'OrderItems table already exists.';
+  `);
+
+ 
+ 
   console.log('[DB] Database initialised');
 };
+
+
+
 
 module.exports = { getPool, initDatabase, sql };

@@ -1,10 +1,12 @@
-const express        = require('express');
-const cors           = require('cors');
-const helmet         = require('helmet');
-const swaggerUi      = require('swagger-ui-express');
-const swaggerSpec    = require('./config/swagger');
-const productRoutes  = require('./routes/products.routes');
-const errorHandler   = require('./middleware/error.middleware');
+const express       = require('express');
+const cors          = require('cors');
+const helmet        = require('helmet');
+const swaggerUi     = require('swagger-ui-express');
+const swaggerSpec   = require('./config/swagger');
+const productRoutes = require('./routes/products.routes');
+const orderRoutes   = require('./routes/order.routes');
+const { productRouter: priceProductRouter, priceRouter } = require('./routes/productPrice.routes');
+const errorHandler  = require('./middleware/error.middleware');
 
 const app = express();
 
@@ -29,11 +31,13 @@ app.use(
   }),
 );
 
-// Raw spec for tooling
 app.get('/api-docs.json', (_req, res) => res.json(swaggerSpec));
 
 // ── API routes ────────────────────────────────────────────────────────────
 app.use('/api/products', productRoutes);
+app.use('/api/products/:productId/prices', priceProductRouter);  // nested: prices per product
+app.use('/api/prices', priceRouter);                            // standalone: price by id
+app.use('/api/orders', orderRoutes);                          
 
 // ── 404 catch-all ─────────────────────────────────────────────────────────
 app.use((_req, res) =>
