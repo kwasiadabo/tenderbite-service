@@ -13,7 +13,7 @@ const dbConfig = {
   passsword:'Kaw3se4dr5$$1',
   options: {
     encrypt:true, //process.env.DB_ENCRYPT === 'true',
-    trustServerCertificate: 'true',//process.env.DB_TRUST_SERVER_CERTIFICATE === 'true',
+    trustServerCertificate: true,//process.env.DB_TRUST_SERVER_CERTIFICATE === 'true',
     enableArithAbort: true,
   },
   pool: {
