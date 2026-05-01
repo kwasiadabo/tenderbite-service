@@ -1,16 +1,16 @@
 const sql = require('mssql');
 
 const dbConfig = {
-  server:'SQL8011.site4now.net',
+  server:SQL8011.site4now.net,
   // server: process.env.DB_SERVER || 'localhost',
   port:1433,
  // port: parseInt(process.env.DB_PORT) || 1433,
   //database: process.env.DB_DATABASE || 'ProductsDB',
-  database:'db_ac6b0b_tenderbitedb',
+  database:db_ac6b0b_tenderbitedb,
   //user: process.env.DB_USER || 'sa',
-  user:'db_ac6b0b_tenderbitedb_admin',
+  user:db_ac6b0b_tenderbitedb_admin,
   //password: process.env.DB_PASSWORD || '',
-  passsword:'Kaw3se4dr5$$1',
+  passsword:Kaw3se4dr5$$1,
   options: {
     encrypt:true, //process.env.DB_ENCRYPT === 'true',
     trustServerCertificate: true,//process.env.DB_TRUST_SERVER_CERTIFICATE === 'true',
