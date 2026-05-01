@@ -8,6 +8,7 @@ const dbConfig = {
   //database: process.env.DB_DATABASE || 'ProductsDB',
   database:'db_ac6b0b_tenderbitedb',
   //user: process.env.DB_USER || 'sa',
+  user:'db_ac6b0b_tenderbitedb_admin',
   //password: process.env.DB_PASSWORD || '',
   passsword:'Kaw3se4dr5$$1',
   options: {
