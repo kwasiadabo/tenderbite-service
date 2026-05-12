@@ -114,7 +114,7 @@ async function findImageById(id) {
 
 // ── Update ────────────────────────────────────────────────────────────────
 
-async function updateProduct(id, { productName, description,productImage, imageFileName, imageMimeType, imageSize }) {
+async function updateProduct(id, { productName, description,weight,category,productImage, imageFileName, imageMimeType, imageSize }) {
   const pool       = await getPool();
   const setClauses = ['updatedAt = SYSDATETIME()'];
   const request    = pool.request().input('id', sql.UniqueIdentifier, id);
@@ -126,8 +126,8 @@ async function updateProduct(id, { productName, description,productImage, imageF
   if (description !== undefined) {
     setClauses.push('description = @description');
     request.input('description', sql.NVarChar(sql.MAX), description);
-    //  request.input('weight', sql.NVarChar(50), weight);
-    //   request.input('category', sql.NVarChar(50), category);
+    request.input('weight', sql.NVarChar(50), weight);
+    request.input('category', sql.NVarChar(50), category);
   }
   if (productImage !== undefined) {
     // All four image columns must be updated together
