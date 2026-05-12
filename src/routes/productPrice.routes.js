@@ -15,7 +15,7 @@ const priceRouter   = express.Router();                       // for /api/prices
 
 /**
  * @swagger
- * /api/prices/{productId}/prices:
+ * /api/productprices/{productId}:
  *   post:
  *     summary: Set a price for a product
  *     description: >
@@ -58,11 +58,11 @@ const priceRouter   = express.Router();                       // for /api/prices
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-priceRouter.post('/:productId/prices', controller.createPrice);
+priceRouter.post('/:productId', controller.createPrice);
 
 /**
  * @swagger
- * /api/prices/{productId}/prices:
+ * /api/productprices/{productId}:
  *   get:
  *     summary: Get all prices for a product
  *     description: Returns the full price history for a product, newest first.
@@ -97,11 +97,11 @@ priceRouter.post('/:productId/prices', controller.createPrice);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-priceRouter.get('/:productId/prices', controller.getPricesByProductId);
+priceRouter.get('/:productId', controller.getPricesByProductId);
 
 /**
  * @swagger
- * /api/prices/{productId}/prices/active:
+ * /api/productprices/{productId}/active:
  *   get:
  *     summary: Get the currently active price for a product
  *     description: >
@@ -131,13 +131,13 @@ priceRouter.get('/:productId/prices', controller.getPricesByProductId);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-priceRouter.get('/:productId/prices/active', controller.getActivePrice);
+priceRouter.get('/:productId/active', controller.getActivePrice);
 
 // ── Routes under /api/prices/:id ──────────────────────────────────────────
 
 /**
  * @swagger
- * /api/prices/{id}:
+ * /api/productprices/{id}:
  *   get:
  *     summary: Get a price record by ID
  *     tags: [Prices]
@@ -171,7 +171,7 @@ priceRouter.get('/:id', controller.getPriceById);
  
 /**
  * @swagger
- * /api/prices/products/active:
+ * /api/productprices/active:
  *   get:
  *     summary: List all products with their active price
  *     description: >
@@ -207,7 +207,7 @@ priceRouter.get('/:id', controller.getPriceById);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-priceRouter.get('/products/active', controller.getAllProductsWithActivePrice);
+priceRouter.get('/active', controller.getAllProductsWithActivePrice);
  
 
 /**
