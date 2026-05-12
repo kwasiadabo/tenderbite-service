@@ -6,7 +6,7 @@ const { deleteImageFile, UPLOAD_DIR } = require('../middleware/upload.middleware
 // ── Helpers ───────────────────────────────────────────────────────────────
 
 const buildImageUrl  = (id) =>
-  `${process.env.BASE_URL || 'http://localhost:3000'}/api/products/${id}/image`;
+  `${process.env.IMAGE_BASE_URL || 'http://localhost:3000'}/api/products/${id}/image`;
 
 // imageFileName is the actual filename on disk (e.g. "abc123.webp").
 // It is stored in its own DB column – never derived by splitting the URL.
