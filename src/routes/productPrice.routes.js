@@ -212,7 +212,7 @@ priceRouter.get('/active', controller.getAllProductsWithActivePrice);
 
 /**
  * @swagger
- * /api/prices/{id}:
+ * /api/productprices/{id}:
  *   put:
  *     summary: Update a price record
  *     description: All fields are optional – only supplied fields are updated.
@@ -255,7 +255,7 @@ priceRouter.put('/:id', controller.updatePrice);
 
 /**
  * @swagger
- * /api/prices/{id}:
+ * /api/productprices/{id}:
  *   delete:
  *     summary: Delete a price record
  *     tags: [Prices]
