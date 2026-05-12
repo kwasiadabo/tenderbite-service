@@ -106,7 +106,7 @@ async function getProductImage(id) {
 
 // ── Update ────────────────────────────────────────────────────────────────
 
-async function updateProduct(id, { productName, description }, file) {
+async function updateProduct(id, { productName, description,weight,category}, file) {
   const existing = await model.findById(id);
   if (!existing) throw notFound(id);
 
@@ -118,6 +118,12 @@ async function updateProduct(id, { productName, description }, file) {
   }
   if (description !== undefined) {
     updates.description = description?.trim() || null;
+  }
+   if (weight !== undefined) {
+    updates.weight = weight?.trim() || null;
+  }
+   if (category !== undefined) {
+    updates.category = category?.trim() || null;
   }
   if (file) {
     // Delete old image using imageFileName directly — not by parsing the URL

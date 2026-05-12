@@ -123,6 +123,14 @@ async function updateProduct(id, { productName, description,weight,category,prod
     setClauses.push('productName = @productName');
     request.input('productName', sql.NVarChar(255), productName);
   }
+  if (weight !== undefined) {
+    setClauses.push('weight = @weight');
+    request.input('weight', sql.NVarChar(255), weight);
+  }
+  if (category !== undefined) {
+    setClauses.push('category = @category');
+    request.input('category', sql.NVarChar(255), category);
+  }
   if (description !== undefined) {
     setClauses.push('description = @description');
     request.input('description', sql.NVarChar(sql.MAX), description);
