@@ -171,7 +171,7 @@ priceRouter.get('/:id', controller.getPriceById);
  
 /**
  * @swagger
- * /api/productprices/active:
+ * /api/productprices/allactive:
  *   get:
  *     summary: List all products with their active price
  *     description: >
@@ -207,7 +207,7 @@ priceRouter.get('/:id', controller.getPriceById);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-priceRouter.get('/active', controller.getAllProductsWithActivePrice);
+priceRouter.get('/allactive', controller.getAllProductsWithActivePrice);
  
 
 /**

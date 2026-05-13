@@ -6,7 +6,7 @@ async function createPrice({ productId, price, currency, effectiveFrom, effectiv
   const pool   = await getPool();
   const result = await pool
     .request()
-    .input('productId',     sql.UniqueIdentifier, productId)
+    .input('productId',     sql.NVarChar(50), productId)
     .input('price',         sql.Decimal(10, 2),   price)
     .input('currency',      sql.NVarChar(3),       currency)
     .input('effectiveFrom', sql.DateTime2,         effectiveFrom || null)
@@ -14,7 +14,6 @@ async function createPrice({ productId, price, currency, effectiveFrom, effectiv
     .query(`
       INSERT INTO productPrice (productId, price, currency, effectiveFrom, effectiveTo)
       OUTPUT
-        INSERTED.id,
         INSERTED.productId,
         INSERTED.price,
         INSERTED.currency,
@@ -76,32 +75,14 @@ async function findAllProductsWithActivePrice() {
   const result = await pool
     .request()
     .query(`
-      SELECT
-        p.id             AS productId,
-        p.productName,
-        p.description,
-        p.productImage,
-        p.createdAt      AS productCreatedAt,
-        p.updatedAt      AS productUpdatedAt,
-        ap.id            AS priceId,
-        ap.price,
-        ap.currency,
-        ap.effectiveFrom,
-        ap.effectiveTo,
-        ap.createdAt     AS priceCreatedAt,
-        ap.updatedAt     AS priceUpdatedAt
-      FROM Products p
-      OUTER APPLY (
-        SELECT TOP 1
-          id, price, currency, effectiveFrom, effectiveTo,
-          createdAt, updatedAt
-        FROM productPrice pp
-        WHERE pp.productId = p.id
-          AND (pp.effectiveFrom IS NULL OR pp.effectiveFrom <= SYSDATETIME())
-          AND (pp.effectiveTo   IS NULL OR pp.effectiveTo   >= SYSDATETIME())
-        ORDER BY pp.effectiveFrom DESC, pp.createdAt DESC
-      ) ap
-      ORDER BY p.productName ASC
+SELECT
+p.Id, productName,description,productImage, isnull(pp.price,0.00) as price,
+effectiveFrom,effectiveTo
+from products p 
+left join productprice pp on pp.productId=p.id
+WHERE (pp.effectiveFrom IS NULL OR pp.effectiveFrom <= SYSDATETIME())
+AND (pp.effectiveTo   IS NULL OR pp.effectiveTo   >= SYSDATETIME())
+ORDER BY p.productName ASC
     `);
  
   return result.recordset;
