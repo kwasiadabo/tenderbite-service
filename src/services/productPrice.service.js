@@ -103,6 +103,7 @@ async function getAllProductsWithActivePrice() {
     productName:      row.productName,
     description:      row.description,
     productImage:     row.productImage,
+    category:         row.category,
     price:            row.price,
     effectiveFrom:    row.effectiveFrom,
     effectiveTo:      row.effectiveTo,
