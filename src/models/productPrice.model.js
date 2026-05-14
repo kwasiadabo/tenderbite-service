@@ -82,7 +82,7 @@ from products p
 left join productprice pp on pp.productId=p.id
 WHERE ( CONVERT(DATE, pp.effectiveFrom)  IS NULL OR CONVERT(DATE, pp.effectiveFrom) <= CONVERT(DATE, SYSDATETIME())
 AND (CONVERT(DATE, pp.effectiveTo)   IS NULL OR CONVERT(DATE, pp.effectiveTo)    >=CONVERT(DATE, SYSDATETIME())))
-AND pp.price is not null       `);
+AND pp.price is not null`);
  return result.recordset;
  //return 'Results from price model'
 }
