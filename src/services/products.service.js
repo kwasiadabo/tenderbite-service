@@ -62,24 +62,20 @@ async function createProduct({ productName, description,weight,category }, file)
 
 // ── Get all (paginated) ───────────────────────────────────────────────────
 
-async function getAllProducts({ page = 1, limit = 10, search = '' } = {}) {
-  const parsedPage  = Math.max(1, parseInt(page)  || 1);
-  const parsedLimit = Math.min(100, Math.max(1, parseInt(limit) || 10));
+// products.service.js
+async function getAllProducts({ page, limit, search }) {
+  const result = await model.findAll({ page, limit, search });
 
-  const { rows, total } = await model.findAll({
-    page:   parsedPage,
-    limit:  parsedLimit,
-    search: search?.trim() || '',
-  });
+  // ❌ Wrong — result is the whole object { data, totalCount, page, limit, totalPages }
+  // return result.map(...) 
 
+  // ✅ Correct — access .data
   return {
-    data: rows.map(formatProduct),
-    pagination: {
-      total,
-      page:       parsedPage,
-      limit:      parsedLimit,
-      totalPages: Math.ceil(total / parsedLimit),
-    },
+    data:       result.data,
+    totalCount: result.totalCount,
+    page:       result.page,
+    limit:      result.limit,
+    totalPages: result.totalPages,
   };
 }
 

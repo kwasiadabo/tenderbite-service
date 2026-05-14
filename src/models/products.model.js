@@ -39,7 +39,11 @@ async function findAll({ page = 1, limit = 10, search = '' } = {}) {
     .input('offset', sql.Int,           offset)
     .execute('sp_GetAllProducts');
 
-  const rows       = result.recordset;
+  // Debug — remove once fixed
+  console.log('recordsets:', JSON.stringify(result.recordsets, null, 2));
+  console.log('recordset:',  JSON.stringify(result.recordset,  null, 2));
+
+  const rows       = Array.isArray(result.recordsets?.[0]) ? result.recordsets[0] : [];
   const totalCount = rows[0]?.totalCount ?? 0;
 
   return {
