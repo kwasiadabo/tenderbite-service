@@ -5,39 +5,22 @@ const { v4: uuidv4 }   = require('uuid');
 // UUID is pre-generated so the caller can build the final image URL before
 // the INSERT, avoiding a two-step insert+update pattern.
 
-async function createProduct({ id, productName, description, weight,category, productImage, imageFileName, imageMimeType, imageSize }) {
-  const pool   = await getPool();
-  const newId  = id || uuidv4();
+async function createProduct({ id, productName, description, weight, category, productImage, imageFileName, imageMimeType, imageSize }) {
+  const pool  = await getPool();
+  const newId = id || uuidv4();
 
   const result = await pool
     .request()
     .input('id',            sql.UniqueIdentifier,  newId)
     .input('productName',   sql.NVarChar(255),     productName)
-    .input('description',   sql.NVarChar(sql.MAX), description || null)
-    .input('weight',        sql.NVarChar(50),      weight || '1kg')
-    .input('category',      sql.NVarChar(50), category)
+    .input('description',   sql.NVarChar(sql.MAX), description   || null)
+    .input('weight',        sql.NVarChar(50),      weight        || '1kg')
+    .input('category',      sql.NVarChar(50),      category)
     .input('productImage',  sql.NVarChar(500),     productImage)
     .input('imageFileName', sql.NVarChar(255),     imageFileName)
     .input('imageMimeType', sql.NVarChar(100),     imageMimeType)
     .input('imageSize',     sql.Int,               imageSize)
-    .query(`
-      INSERT INTO Products
-        (id, productName, description,weight,category, productImage, imageFileName, imageMimeType, imageSize)
-      OUTPUT
-        INSERTED.id,
-        INSERTED.productName,
-        INSERTED.description,
-        INSERTED.weight,
-        INSERTED.category,
-        INSERTED.productImage,
-        INSERTED.imageFileName,
-        INSERTED.imageMimeType,
-        INSERTED.imageSize,
-        INSERTED.createdAt,
-        INSERTED.updatedAt
-      VALUES
-        (@id, @productName, @description,@weight,@category, @productImage, @imageFileName, @imageMimeType, @imageSize)
-    `);
+    .execute('sp_CreateProduct');
 
   return result.recordset[0];
 }
@@ -54,26 +37,18 @@ async function findAll({ page = 1, limit = 10, search = '' } = {}) {
     .input('search', sql.NVarChar(255), searchParam)
     .input('limit',  sql.Int,           limit)
     .input('offset', sql.Int,           offset)
-    .query(`
-      WITH Filtered AS (
-        SELECT
-          id, productName, description, productImage,weight,category,
-          imageFileName, imageMimeType, imageSize, createdAt, updatedAt,
-          COUNT(*) OVER () AS totalCount
-        FROM Products
-        WHERE productName LIKE @search
-           OR description  LIKE @search
-      )
-      SELECT * FROM Filtered
-      ORDER BY createdAt DESC
-      OFFSET @offset ROWS
-      FETCH NEXT @limit ROWS ONLY
-    `);
+    .execute('sp_GetAllProducts');
 
-  const total = result.recordset[0]?.totalCount ?? 0;
-  const rows  = result.recordset.map(({ totalCount, ...row }) => row);
+  const rows       = result.recordset;
+  const totalCount = rows[0]?.totalCount ?? 0;
 
-  return { rows, total };
+  return {
+    data:       rows.map(({ totalCount: _, ...rest }) => rest),
+    totalCount,
+    page,
+    limit,
+    totalPages: Math.ceil(totalCount / limit),
+  };
 }
 
 // ── Read one (full row) ───────────────────────────────────────────────────
@@ -83,13 +58,7 @@ async function findById(id) {
   const result = await pool
     .request()
     .input('id', sql.UniqueIdentifier, id)
-    .query(`
-      SELECT
-        id, productName, description, weight,category, productImage,
-        imageFileName, imageMimeType, imageSize, createdAt, updatedAt
-      FROM Products
-      WHERE id = @id
-    `);
+    .execute('sp_GetProductById');
 
   return result.recordset[0] || null;
 }
@@ -103,73 +72,31 @@ async function findImageById(id) {
   const result = await pool
     .request()
     .input('id', sql.UniqueIdentifier, id)
-    .query(`
-      SELECT productImage, imageFileName, imageMimeType, imageSize
-      FROM   Products WITH (INDEX(IX_Products_Image))
-      WHERE  id = @id
-    `);
+    .execute('sp_GetProductImageById');
 
   return result.recordset[0] || null;
 }
 
 // ── Update ────────────────────────────────────────────────────────────────
 
-async function updateProduct(id, { productName, description,weight,category,productImage, imageFileName, imageMimeType, imageSize }) {
-  const pool       = await getPool();
-  const setClauses = ['updatedAt = SYSDATETIME()'];
-  const request    = pool.request().input('id', sql.UniqueIdentifier, id);
+async function updateProduct(id, { productName, description, weight, category, productImage, imageFileName, imageMimeType, imageSize }) {
+  const pool = await getPool();
 
-  if (productName !== undefined) {
-    setClauses.push('productName = @productName');
-    request.input('productName', sql.NVarChar(255), productName);
-  }
-  if (weight !== undefined) {
-    setClauses.push('weight = @weight');
-    request.input('weight', sql.NVarChar(255), weight);
-  }
-  if (category !== undefined) {
-    setClauses.push('category = @category');
-    request.input('category', sql.NVarChar(255), category);
-  }
-  if (description !== undefined) {
-    setClauses.push('description = @description');
-    request.input('description', sql.NVarChar(sql.MAX), description);
-    request.input('weight', sql.NVarChar(50), weight);
-    request.input('category', sql.NVarChar(50), category);
-  }
-  if (productImage !== undefined) {
-    // All four image columns must be updated together
-    setClauses.push('productImage = @productImage');
-    setClauses.push('imageFileName = @imageFileName');
-    setClauses.push('imageMimeType = @imageMimeType');
-    setClauses.push('imageSize = @imageSize');
-    request.input('productImage',  sql.NVarChar(500), productImage);
-    request.input('imageFileName', sql.NVarChar(255), imageFileName);
-    request.input('imageMimeType', sql.NVarChar(100), imageMimeType);
-    request.input('imageSize',     sql.Int,           imageSize);
-  }
-
-  const result = await request.query(`
-    UPDATE Products
-    SET    ${setClauses.join(', ')}
-    OUTPUT
-      INSERTED.id,
-      INSERTED.productName,
-      INSERTED.description,
-      INSERTED.weight,
-      INSERTED.category,
-      INSERTED.productImage,
-      INSERTED.imageFileName,
-      INSERTED.imageMimeType,
-      INSERTED.imageSize,
-      INSERTED.createdAt,
-      INSERTED.updatedAt
-    WHERE id = @id
-  `);
+  const result = await pool
+    .request()
+    .input('id',            sql.UniqueIdentifier,  id)
+    .input('productName',   sql.NVarChar(255),     productName   ?? null)
+    .input('description',   sql.NVarChar(sql.MAX), description   ?? null)
+    .input('weight',        sql.NVarChar(50),      weight        ?? null)
+    .input('category',      sql.NVarChar(50),      category      ?? null)
+    .input('productImage',  sql.NVarChar(500),     productImage  ?? null)
+    .input('imageFileName', sql.NVarChar(255),     imageFileName ?? null)
+    .input('imageMimeType', sql.NVarChar(100),     imageMimeType ?? null)
+    .input('imageSize',     sql.Int,               imageSize     ?? null)
+    .execute('sp_UpdateProduct');
 
   return result.recordset[0] || null;
 }
-
 // ── Delete ────────────────────────────────────────────────────────────────
 
 async function deleteProduct(id) {
@@ -177,11 +104,7 @@ async function deleteProduct(id) {
   const result = await pool
     .request()
     .input('id', sql.UniqueIdentifier, id)
-    .query(`
-      DELETE FROM Products
-      OUTPUT DELETED.id, DELETED.productImage, DELETED.imageFileName
-      WHERE  id = @id
-    `);
+    .execute('sp_DeleteProduct');
 
   return result.recordset[0] || null;
 }
