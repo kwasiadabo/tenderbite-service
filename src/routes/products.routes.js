@@ -1,7 +1,6 @@
-const express           = require('express');
+const express    = require('express');
 const controller = require('../controllers/products.controller');
 const { upload, optimiseImage } = require('../middleware/upload.middleware');
-
 const router = express.Router();
 
 // Multer + Sharp pipeline for single-file uploads

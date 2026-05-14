@@ -3,14 +3,14 @@
 const { Router } = require('express');
 const authRoutes = require('./auth.routes');
 const productsRoutes = require('./products.routes');
-const productsPricesRoutes = require('./productPrice.routes');
+const productsPricesRoutes = require('./pricesRoute.routes');
 
 
 const router = Router();
 
 router.use('/auth', authRoutes);
 router.use('/products', productsRoutes);
-router.use('/prices', productsPricesRoutes);
+router.use('/productprices', productsPricesRoutes);
 
 
 

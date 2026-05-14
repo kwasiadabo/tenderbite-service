@@ -5,7 +5,7 @@ const swaggerUi     = require('swagger-ui-express');
 const swaggerSpec   = require('./config/swagger');
 const productRoutes = require('./routes/products.routes');
 const orderRoutes   = require('./routes/order.routes');
-const { productRouter: priceProductRouter, priceRouter } = require('./routes/productPrice.routes');
+const pricesRoute   = require('./routes/pricesRoute.routes');
 const errorHandler  = require('./middleware/error.middleware');
 
 const app = express();
@@ -36,8 +36,7 @@ app.get('/api-docs.json', (_req, res) => res.json(swaggerSpec));
 
 // ── API routes ────────────────────────────────────────────────────────────
 app.use('/api/products', productRoutes);
-app.use('/api/products/:productId/prices', priceProductRouter);  // nested: prices per product
-app.use('/api/productprices', priceRouter);                            // standalone: price by id
+app.use('/api/productprices', pricesRoute);              
 app.use('/api/orders', orderRoutes);                          
 
 // ── 404 catch-all ─────────────────────────────────────────────────────────

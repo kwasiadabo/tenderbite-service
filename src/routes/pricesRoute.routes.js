@@ -1,10 +1,11 @@
 const express    = require('express');
 const controller = require('../controllers/productPrice.controller');
+//const productRouter = express.Router({ mergeParams: true }); // for /api/products/:productId/prices
+const router   = express.Router();   
 
-const productRouter = express.Router({ mergeParams: true }); // for /api/products/:productId/prices
-const priceRouter   = express.Router();                       // for /api/prices/:id
+                 
 
-// ── Routes nested under /api/products/:productId/prices ──────────────────
+// ── Routes ──────────────────
 
 /**
  * @swagger
@@ -58,7 +59,7 @@ const priceRouter   = express.Router();                       // for /api/prices
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-priceRouter.post('/:productId', controller.createPrice);
+router.post('/:productId', controller.createPrice);
 
 /**
  * @swagger
@@ -97,11 +98,11 @@ priceRouter.post('/:productId', controller.createPrice);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-priceRouter.get('/:productId', controller.getPricesByProductId);
+router.get('/price/:productId', controller.getPricesByProductId);
 
 /**
  * @swagger
- * /api/productprices/{productId}/active:
+ * /api/productprices/{productId}/price:
  *   get:
  *     summary: Get the currently active price for a product
  *     description: >
@@ -131,47 +132,14 @@ priceRouter.get('/:productId', controller.getPricesByProductId);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-priceRouter.get('/:productId/active', controller.getActivePrice);
-
-// ── Routes under /api/prices/:id ──────────────────────────────────────────
-
-/**
- * @swagger
- * /api/productprices/{id}:
- *   get:
- *     summary: Get a price record by ID
- *     tags: [Prices]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *         description: Price record UUID
- *     responses:
- *       200:
- *         description: Price record
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/PriceResponse'
- *       404:
- *         description: Price not found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- */
-priceRouter.get('/:id', controller.getPriceById);
-
+router.get('/:productId/price', controller.getActivePrice);
 
 
 // ── /api/prices ───────────────────────────────────────────────────────────
  
 /**
  * @swagger
- * /api/productprices/allactive:
+ * /api/productprices/productprices:
  *   get:
  *     summary: List all products with their active price
  *     description: >
@@ -207,7 +175,7 @@ priceRouter.get('/:id', controller.getPriceById);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-priceRouter.get('/allactive', controller.getAllProductsWithActivePrice);
+router.get('/productprices', controller.getAllProductPrices);
  
 
 /**
@@ -251,7 +219,7 @@ priceRouter.get('/allactive', controller.getAllProductsWithActivePrice);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-priceRouter.put('/:id', controller.updatePrice);
+router.put('/:id', controller.updatePrice);
 
 /**
  * @swagger
@@ -288,6 +256,6 @@ priceRouter.put('/:id', controller.updatePrice);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-priceRouter.delete('/:id', controller.deletePrice);
+router.delete('/:id', controller.deletePrice);
 
-module.exports = { productRouter, priceRouter };
+module.exports = router ;

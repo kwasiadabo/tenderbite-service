@@ -97,25 +97,15 @@ async function getActivePriceByProductId(productId) {
  
 async function getAllProductsWithActivePrice() {
   const rows = await model.findAllProductsWithActivePrice();
- console.log(rows)
+ //console('Price services')
   return rows.map((row) => ({
-    productId:        row.productId,
+    priceId:        row.Id,
     productName:      row.productName,
     description:      row.description,
     productImage:     row.productImage,
-    productCreatedAt: row.productCreatedAt,
-    productUpdatedAt: row.productUpdatedAt,
-    activePrice: row.priceId
-      ? {
-          id:            row.priceId,
-          price:         row.price,
-          currency:      row.currency,
-          effectiveFrom: row.effectiveFrom,
-          effectiveTo:   row.effectiveTo,
-          createdAt:     row.priceCreatedAt,
-          updatedAt:     row.priceUpdatedAt,
-        }
-      : null,
+    price:            row.price,
+    effectiveFrom:    row.effectiveFrom,
+    effectiveTo:      row.effectiveTo,
   }));
 }
  

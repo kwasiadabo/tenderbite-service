@@ -76,16 +76,16 @@ async function findAllProductsWithActivePrice() {
     .request()
     .query(`
 SELECT
-p.Id, productName,description,productImage, isnull(pp.price,0.00) as price,
+pp.Id, productName,description,productImage, isnull(pp.price,0.00) as price,
 effectiveFrom,effectiveTo
 from products p 
 left join productprice pp on pp.productId=p.id
 WHERE (pp.effectiveFrom IS NULL OR pp.effectiveFrom <= SYSDATETIME())
 AND (pp.effectiveTo   IS NULL OR pp.effectiveTo   >= SYSDATETIME())
 ORDER BY p.productName ASC
-    `);
- 
-  return result.recordset;
+       `);
+ return result.recordset;
+ //return 'Results from price model'
 }
  
 

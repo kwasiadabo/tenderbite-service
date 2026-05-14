@@ -31,7 +31,7 @@ async function getActivePrice(req, res, next) {
 }
 
 /// GET /api/prices/products/active
-async function getAllProductsWithActivePrice(req, res, next) {
+async function getAllProductPrices(req, res, next) {
   try {
     const data = await service.getAllProductsWithActivePrice();
     return res.status(200).json({
@@ -75,4 +75,4 @@ async function deletePrice(req, res, next) {
   }
 }
 
-module.exports = { createPrice, getPricesByProductId, getActivePrice, getPriceById, updatePrice, deletePrice,getAllProductsWithActivePrice };
+module.exports = { createPrice, getPricesByProductId, getActivePrice, getPriceById, updatePrice, deletePrice,getAllProductPrices };
