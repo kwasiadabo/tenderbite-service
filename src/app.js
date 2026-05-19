@@ -6,6 +6,7 @@ const swaggerSpec   = require('./config/swagger');
 const productRoutes = require('./routes/products.routes');
 const orderRoutes   = require('./routes/order.routes');
 const pricesRoute   = require('./routes/pricesRoute.routes');
+const categoryRoutes= require('./routes/category.routes');
 const errorHandler  = require('./middleware/error.middleware');
 
 const app = express();
@@ -47,6 +48,7 @@ app.get('/api-docs.json', (_req, res) => res.json(swaggerSpec));
 app.use('/api/products', productRoutes);
 app.use('/api/productprices', pricesRoute);
 app.use('/api/orders', orderRoutes);
+app.use('/api/category', categoryRoutes);
 
 // ── 404 catch-all ─────────────────────────────────────────────────────────
 app.use((_req, res) =>

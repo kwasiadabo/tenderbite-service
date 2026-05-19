@@ -194,8 +194,24 @@ const initDatabase = async () => {
     ELSE PRINT 'OrderItems table already exists.';
   `);
 
- 
- 
+  // ── Category table ──────────────────────────────────────────────────
+  await db.request().query(`
+    IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'category')
+        BEGIN
+            CREATE TABLE dbo.Category (
+                Id          INT IDENTITY(1,1)   NOT NULL,
+                Category    NVARCHAR(100)        NOT NULL,
+                CONSTRAINT PK_Category PRIMARY KEY CLUSTERED (Id ASC)
+            );
+            CREATE NONCLUSTERED INDEX IX_Category_Name 
+            ON dbo.Category(Category ASC);
+            PRINT 'Table created successfully.';
+        END
+        ELSE
+        BEGIN
+            PRINT 'Table already exists, skipping.';
+        END
+`);
   console.log('[DB] Database initialised');
 };
 
