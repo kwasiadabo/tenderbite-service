@@ -99,7 +99,8 @@ async function getAllProductsWithActivePrice() {
   const rows = await model.findAllProductsWithActivePrice();
  //console('Price services')
   return rows.map((row) => ({
-    priceId:        row.Id,
+    priceId:          row.Id,
+    productId:        row.productId,
     productName:      row.productName,
     description:      row.description,
     productImage:     row.productImage,

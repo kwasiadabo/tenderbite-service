@@ -47,7 +47,6 @@ async function findAllProductsWithActivePrice() {
   const result = await pool
     .request()
     .execute('sp_GetAllProductsWithActivePrice');
-
   return result.recordsets?.[0] ?? result.recordset ?? [];
 }
 
